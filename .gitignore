@@ -1,0 +1,23 @@
+# Credentials and local tool configuration
+firmware/DeskPal/config.h
+.env
+.env.*
+!.env.example
+arduino-cli.yaml
+# Outputs
+build/
+.build/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+# Unreviewed historical assets belong in the sibling archive, never in Git
+private/
+originals/
+*.mp4
+*.mov
+*.MP3
+*.docx
+*.pptx
+*.pdf
+*.zip

@@ -1,0 +1,9 @@
+* text=auto
+*.ino text eol=lf
+*.h text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.webp binary
+
+# Preserve recovered vendor bytes for provenance hashes on every platform.
+libraries/** -text

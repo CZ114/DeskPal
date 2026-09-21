@@ -1,0 +1,13 @@
+DeskPal
+Application originally developed by Zhe Chen for the EEEE3124 Internet of Things
+(2024/25) Mini Project at the University of Nottingham Ningbo China.
+Public project packaging prepared in 2026.
+
+The application uses an Edge Impulse inference example pattern and generated
+PoseDetection library. Edge Impulse, TensorFlow Lite, ARM CMSIS, Kiss FFT,
+FlatBuffers, gemmlowp and other upstream components retain their original
+copyright notices and licenses. See THIRD_PARTY_NOTICES.md and the library files.
+
+The root Apache-2.0 license covers the DeskPal application and newly written
+project documentation. It does not relicense bundled third-party components,
+photographs, award certificates, institutional marks or archived presentations.
