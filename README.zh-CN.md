@@ -17,6 +17,12 @@
 
 下面按原始 15 页 PPT 与固件源码逐项对应。凡是源码中没有实现的内容，均标为课程设计或未来规划。
 
+<p align="center">
+  <img src="media/presentation/architecture-overview.webp" width="48%" alt="PPT 第 4 页 DeskPal 系统架构图">
+  <img src="media/presentation/program-flow.webp" width="48%" alt="PPT 第 5 页 DeskPal 程序流程图">
+</p>
+<p align="center"><sub>原 PPT 记录：第 4 页系统架构与第 5 页程序流程。</sub></p>
+
 ### 1. 启动、时钟与天气握手
 
 设备启动后初始化 LCD、SHT40 温湿度传感器、LIS3DHTR 三轴加速度计、Wi-Fi、MQTT 和 NTP。初始界面为睡眠表情，同时显示 UTC+8 本地时间与环境数据，时间名义上每 2 秒刷新一次。
@@ -32,6 +38,13 @@
 
 解析 `city` 和 `weather` 后，屏幕显示城市和天气并切换为微笑状态。天气由 MQTT 客户端手动提供；固件没有调用天气 API。
 
+<p align="center">
+  <img src="media/presentation/startup-wifi.webp" width="31%" alt="DeskPal 连接 Wi-Fi">
+  <img src="media/presentation/weather-request.webp" width="31%" alt="DeskPal 请求当前天气">
+  <img src="media/presentation/weather-response-phone.webp" width="22%" alt="手机 MQTT 客户端发送天气 JSON">
+</p>
+<p align="center"><sub>PPT 第 11 页：Wi-Fi 启动、设备天气请求与手机 MQTT 回复。</sub></p>
+
 ### 2. 端侧动作分类
 
 DeskPal 采集 Wio Terminal 内置 LIS3DHTR 的三轴加速度，在设备本地运行 Edge Impulse 模型，类别顺序为 `idle / rise / wave`。屏幕底部显示三个类别的概率。
@@ -40,9 +53,15 @@ PPT 记录的 MLP 结构为：**78 个输入特征 → 30 → 10 → 3 个输出
 
 PPT 用 0.6 解释一般识别阈值；实际交互代码对 `rise` 和 `wave` 使用 **0.8**。模型元数据中另有 0.6 阈值，两者含义不同。
 
+<p align="center"><img src="media/presentation/model-and-development.webp" width="88%" alt="PPT 中的硬件、软件、IoT 和 MLP 配置记录"></p>
+<p align="center"><sub>PPT 第 6 页：硬件、嵌入式软件、IoT 连接与 MLP 参数。</sub></p>
+
 ### 3. LCD 虚拟宠物界面
 
 320 × 240 屏幕显示时间、城市、天气、温湿度、顶部好感度、底部动作概率，以及右侧久坐或晒太阳进度条。恢复出的表情包括睡眠、微笑、伤心、眩晕、晒太阳/舒适、高温警告和睡觉提醒。表情名称还会发布到 `facial` 主题，远程客户端可同步设备状态。
+
+<p align="center"><img src="media/presentation/main-interface-motion.webp" width="72%" alt="DeskPal 主界面显示好感度、天气、环境数据和动作概率"></p>
+<p align="center"><sub>PPT 第 11 页：收到天气数据后的主界面。</sub></p>
 
 ### 4. 久坐提醒与起身奖励
 
@@ -50,15 +69,31 @@ PPT 用 0.6 解释一般识别阈值；实际交互代码对 `rise` 和 `wave` �
 
 若提醒后仍未解决，设备切换为伤心表情，发布 `Don't be lazy! You need to stand up!`，并减少 1 点好感度。这个计数不是实际久坐分钟数，其真实时间会受到推理和网络阻塞影响。
 
+<p align="center">
+  <img src="media/presentation/inactivity-reminder.webp" width="64%" alt="DeskPal 久坐提醒与红色感叹号">
+  <img src="media/presentation/inactivity-mqtt.webp" width="24%" alt="手机收到 MQTT 起身提醒">
+</p>
+<p align="center"><sub>PPT 第 12 页：进度条满后的设备状态与手机提醒。</sub></p>
+
 ### 5. 摇晃、好玩与眩晕互动
 
 概率大于 0.8 的 `wave` 会进入摇晃互动。5 秒窗口内第二次识别到 wave 时显示 `That's funny!`，好感度加 1；继续到第三次时切换眩晕表情、好感度减 1，并重置摇晃计数。
 
 PPT 说手机也会收到眩晕提醒，但恢复出的 wave 分支没有专门发布眩晕通知；表情绘制函数仍可通过 `facial` 主题发布状态。README 按源码记录这一差异。
 
+<p align="center">
+  <img src="media/presentation/wave-funny.webp" width="30%" alt="DeskPal 显示摇晃很好玩">
+  <img src="media/presentation/dizzy-state.webp" width="42%" alt="继续摇晃后的 DeskPal 眩晕表情">
+  <img src="media/presentation/wave-mqtt.webp" width="20%" alt="摇晃互动的 MQTT 手机记录">
+</p>
+<p align="center"><sub>PPT 第 13 页：好玩反馈、眩晕状态和手机 MQTT 记录。</sub></p>
+
 ### 6. 好感度与完成奖励
 
 积极互动增加心形好感度，负面互动减少好感度，最大为 **10**。达到 10 时，屏幕显示完成当天成就的鼓励文字，然后返回微笑界面。中间 **B 键**是开发测试快捷键，可直接增加好感度，不属于正常奖励流程。
+
+<p align="center"><img src="media/presentation/affection-complete.webp" width="72%" alt="DeskPal 好感度达到十点后的完成信息"></p>
+<p align="center"><sub>PPT 第 13 页：好感度达到 10 点后的完成信息。</sub></p>
 
 ### 7. 晴天与光照晒太阳互动
 
@@ -66,17 +101,35 @@ PPT 说手机也会收到眩晕提醒，但恢复出的 wave 分支没有专门�
 
 PPT 使用平板闪光灯进行演示。源码注释保留了原先 1 分钟的设计值，提交演示版本实际使用 30 秒。
 
+<p align="center">
+  <img src="media/presentation/sunbathing-state.webp" width="64%" alt="DeskPal 晒太阳时的墨镜表情">
+  <img src="media/presentation/sunbathing-mqtt.webp" width="24%" alt="手机收到晒太阳 MQTT 提醒">
+</p>
+<p align="center"><sub>PPT 第 14 页：墨镜/光照状态及其 MQTT 提醒。</sub></p>
+
 ### 8. 温湿度监测和高温提醒
 
 外接 SHT40 名义上每 3 秒采样一次，LCD 显示温度和相对湿度，同时向 `Wio-ENV` 发布可读文本。
 
 温度高于 **30 °C** 时，屏幕显示高温警告，并发布 `Warning: Temperature above 30°C, too hot!`。PPT 明确说明 30 °C 是为了课堂演示明显而设置，实际应用需要重新验证阈值。因此它不能作为经过校准的中暑或火灾报警器。
 
+<p align="center">
+  <img src="media/presentation/temperature-warning.webp" width="64%" alt="DeskPal 与 SHT40 高温警告演示">
+  <img src="media/presentation/temperature-mqtt.webp" width="24%" alt="手机收到温度 MQTT 警告">
+</p>
+<p align="center"><sub>PPT 第 14 页：SHT40 演示与手机高温消息。</sub></p>
+
 ### 9. 睡眠管理
 
 DeskPal 读取 NTP 时间，到设定条件后显示睡觉提醒。按左侧 **C 键**确认后，系统停止动作分类，发布 `System shut down, going to sleep.`，并返回睡眠表情。
 
 PPT 说演示阈值设为下午 4 点；提交源码却使用 `currentHour >= 23 || currentHour <= 20`，MQTT 文本又写着 `16 PM`。这是原演示代码中的不一致，本项目如实保留并说明，没有擅自改写历史行为。
+
+<p align="center">
+  <img src="media/presentation/bedtime-reminder.webp" width="64%" alt="DeskPal 睡觉提醒状态">
+  <img src="media/presentation/sleep-mqtt.webp" width="24%" alt="手机收到睡觉和关闭系统 MQTT 消息">
+</p>
+<p align="center"><sub>PPT 第 15 页：睡眠状态与确认后的手机 MQTT 记录。</sub></p>
 
 ### 10. MQTT 完整主题表
 
@@ -89,6 +142,9 @@ PPT 说演示阈值设为下午 4 点；提交源码却使用 `currentHour >= 23
 | `reminders` | 设备 → 客户端 | 连接、起身、晒太阳和睡觉提醒 |
 
 PPT 使用手机 EasyMQTT，以及电脑 MQTTX 或自定义网页作为客户端示例。固件实现了 MQTT 断线重连和重新订阅，但仍是 1883 端口的未认证 MQTT。
+
+<p align="center"><img src="media/presentation/mqtt-environment-feed.webp" width="32%" alt="EasyMQTT 中的 DeskPal 环境和提醒消息"></p>
+<p align="center"><sub>PPT 第 11 页：环境与提醒主题的 EasyMQTT 原始订阅记录。</sub></p>
 
 ## 15 页 PPT 与仓库对应表
 

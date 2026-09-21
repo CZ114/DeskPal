@@ -23,6 +23,12 @@ These are device-motion classes and prototype interaction rules. The repository 
 
 The original 15-slide presentation documents the full prototype flow. The catalogue below cross-checks those slides against the recovered firmware, separating working prototype behavior from presentation proposals.
 
+<p align="center">
+  <img src="media/presentation/architecture-overview.webp" width="48%" alt="Original DeskPal architecture overview from slide 4">
+  <img src="media/presentation/program-flow.webp" width="48%" alt="Original DeskPal program flowchart from slide 5">
+</p>
+<p align="center"><sub>Original presentation records: system architecture (slide 4) and program flow (slide 5).</sub></p>
+
 ### 1. Startup, clock and weather handshake
 
 On power-up, DeskPal initializes the LCD, SHT40 sensor, accelerometer, Wi-Fi, MQTT client and NTP client. The initial screen shows a sleeping face while the device displays local time and environmental readings. The firmware uses UTC+8 and refreshes the displayed time on a nominal two-second schedule.
@@ -38,6 +44,13 @@ Pressing the rightmost **A button** starts the interaction. DeskPal publishes `r
 
 After parsing `city` and `weather`, the device displays them and changes to its normal smiling state. Weather is supplied by the phone or computer MQTT client; the recovered firmware does not call an external weather API.
 
+<p align="center">
+  <img src="media/presentation/startup-wifi.webp" width="31%" alt="DeskPal connecting to Wi-Fi">
+  <img src="media/presentation/weather-request.webp" width="31%" alt="DeskPal asking for the current weather">
+  <img src="media/presentation/weather-response-phone.webp" width="22%" alt="Weather JSON sent from the phone MQTT client">
+</p>
+<p align="center"><sub>Slide 11: Wi-Fi startup, on-device weather request and phone MQTT response.</sub></p>
+
 ### 2. On-device motion classification
 
 DeskPal samples the Wio Terminal's three-axis LIS3DHTR accelerometer and runs the recovered Edge Impulse model locally. Its labels are `idle`, `rise` and `wave`. The LCD prints all three probabilities at the bottom of the screen.
@@ -46,9 +59,15 @@ The presentation records an MLP with a **78-feature input**, fully connected lay
 
 The presentation explains 0.6 as a general recognition threshold. The application logic actually requires a probability above **0.8** for `rise` and `wave` interactions. The generated Edge Impulse metadata separately contains a 0.6 model threshold.
 
+<p align="center"><img src="media/presentation/model-and-development.webp" width="88%" alt="Original development slide showing hardware, software, IoT and MLP configuration"></p>
+<p align="center"><sub>Slide 6: recovered presentation record of hardware, embedded software, IoT links and MLP settings.</sub></p>
+
 ### 3. LCD virtual-pet interface
 
 The 320 × 240 display shows local time, city, weather, temperature, humidity, the affection score, state-specific faces, all three motion probabilities and a vertical progress bar for inactivity or sunbathing. The recovered faces cover sleeping, smiling, sad, dizzy, sunbathing/cozy, hot-warning and bedtime-reminder states. Expression names are also published on `facial`, allowing a remote client to mirror the device state.
+
+<p align="center"><img src="media/presentation/main-interface-motion.webp" width="72%" alt="DeskPal main LCD interface with affection, weather, environment and motion probabilities"></p>
+<p align="center"><sub>Slide 11: main interface after weather data is received.</sub></p>
 
 ### 4. Inactivity and stand-up interaction
 
@@ -56,13 +75,29 @@ When the inactivity counter reaches **20 classifier-loop outcomes**, DeskPal dis
 
 If the reminder remains unresolved, DeskPal changes to a sad face, publishes `Don't be lazy! You need to stand up!` and removes one affection point. The counter is an interaction counter, not measured sedentary minutes; blocking inference and network work affect its real elapsed time.
 
+<p align="center">
+  <img src="media/presentation/inactivity-reminder.webp" width="64%" alt="DeskPal inactivity reminder with exclamation mark">
+  <img src="media/presentation/inactivity-mqtt.webp" width="24%" alt="Stand-up reminder received on the phone through MQTT">
+</p>
+<p align="center"><sub>Slide 12: full inactivity bar and the corresponding phone reminder.</sub></p>
+
 ### 5. Wave, funny and dizzy states
 
 A confident `wave` result enters the shake interaction. Two wave detections inside the five-second window display `That's funny!` and add one affection point. A third continued wave changes the face to dizzy, removes one affection point and resets the wave counter. The presentation describes a phone alert for this interaction, but the recovered wave branch does not publish a dedicated dizzy notification; the facial state can still be published by its drawing routine.
 
+<p align="center">
+  <img src="media/presentation/wave-funny.webp" width="30%" alt="DeskPal responding that the wave interaction is funny">
+  <img src="media/presentation/dizzy-state.webp" width="42%" alt="DeskPal dizzy face after continued waving">
+  <img src="media/presentation/wave-mqtt.webp" width="20%" alt="MQTT state messages during the wave interaction">
+</p>
+<p align="center"><sub>Slide 13: funny response, dizzy state and phone MQTT record.</sub></p>
+
 ### 6. Affection and daily-completion reward
 
 Positive interactions increase the heart-based affection score and negative interactions reduce it. The maximum is **10**. Reaching 10 temporarily replaces the normal interface with `You've completed all achievements today! You must have had a good day!`, then returns to the smiling face. The middle **B button** is retained as a test shortcut that increments affection; it is a development aid rather than a normal reward path.
+
+<p align="center"><img src="media/presentation/affection-complete.webp" width="72%" alt="DeskPal completion message after reaching ten affection points"></p>
+<p align="center"><sub>Slide 13: completion message at the 10-point affection limit.</sub></p>
 
 ### 7. Sunny-weather and light interaction
 
@@ -70,17 +105,35 @@ When the exact weather string is `sunny`, DeskPal publishes `Let's go sunbathing
 
 The presentation demonstrates this with a tablet flashlight. The commented source records a one-minute design value, while the submitted demo uses 30 seconds.
 
+<p align="center">
+  <img src="media/presentation/sunbathing-state.webp" width="64%" alt="DeskPal sunglasses expression during the light interaction">
+  <img src="media/presentation/sunbathing-mqtt.webp" width="24%" alt="Sunbathing reminder received through MQTT">
+</p>
+<p align="center"><sub>Slide 14: sunglasses/light state and its MQTT reminder.</sub></p>
+
 ### 8. Temperature and humidity monitoring
 
 The external SHT40 is sampled on a nominal three-second schedule. DeskPal displays temperature and relative humidity locally and publishes a human-readable reading to `Wio-ENV`.
 
 Above **30 °C**, the prototype displays a hot warning and publishes `Warning: Temperature above 30°C, too hot!`. The presentation says 30 °C was deliberately chosen to make the classroom demo obvious and suggests that a real deployment would require a different, validated alarm threshold. This is a prototype reminder, not a calibrated heat or fire alarm.
 
+<p align="center">
+  <img src="media/presentation/temperature-warning.webp" width="64%" alt="DeskPal displaying the high-temperature warning beside the SHT40 sensor">
+  <img src="media/presentation/temperature-mqtt.webp" width="24%" alt="Temperature warning received through MQTT">
+</p>
+<p align="center"><sub>Slide 14: SHT40 demonstration and phone temperature warning.</sub></p>
+
 ### 9. Sleep-management interaction
 
 DeskPal reads NTP time and can display a bedtime reminder. Pressing the leftmost **C button** acknowledges it, stops classification, publishes `System shut down, going to sleep.` and returns the pet to its sleeping face.
 
 The presentation says the demo threshold was 4 pm. The submitted source instead checks `currentHour >= 23 || currentHour <= 20` and publishes a message containing `16 PM`; this inconsistent demo logic is preserved and documented rather than silently rewritten.
+
+<p align="center">
+  <img src="media/presentation/bedtime-reminder.webp" width="64%" alt="DeskPal sleeping face during the bedtime interaction">
+  <img src="media/presentation/sleep-mqtt.webp" width="24%" alt="Bedtime and shutdown messages received through MQTT">
+</p>
+<p align="center"><sub>Slide 15: sleep state and phone MQTT record after confirmation.</sub></p>
 
 ### 10. MQTT topics and remote client
 
@@ -93,6 +146,9 @@ The presentation says the demo threshold was 4 pm. The submitted source instead 
 | `reminders` | device → client | Connection, stand-up, sunbath and sleep messages |
 
 The presentation uses EasyMQTT on a phone and MQTTX or a custom website on a computer as example clients. The recovered firmware implements automatic MQTT reconnection and resubscription, but uses unauthenticated MQTT on port 1883.
+
+<p align="center"><img src="media/presentation/mqtt-environment-feed.webp" width="32%" alt="EasyMQTT subscription feed with DeskPal environment and reminder messages"></p>
+<p align="center"><sub>Slide 11: original EasyMQTT subscription feed for environment and reminder topics.</sub></p>
 
 ## Presentation-to-repository map
 
